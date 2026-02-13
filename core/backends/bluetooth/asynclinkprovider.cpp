@@ -6,7 +6,8 @@
 
 #include "asynclinkprovider.h"
 #include "bluetoothlinkprovider.h"
-#include "core_debug.h"
+#include <qthread.h>
+#include <qtmetamacros.h>
 
 AsyncLinkProvider::AsyncLinkProvider()
 {
@@ -17,16 +18,33 @@ AsyncLinkProvider::~AsyncLinkProvider()
 }
 
 AsyncLinkProvider::AsyncLinkProvider(bool isDisabled)
-    : connectTimer(new QTimer(this))
 {
     startDisabled = isDisabled;
-    this->moveToThread(&workerThread);
-    connect(&workerThread, &QThread::started, this, &AsyncLinkProvider::runWorker);
-    workerThread.start();
 
-    eventsMutex.lock();
-    events.enqueue(CONSTRUCTOR);
-    eventsMutex.unlock();
+    this->moveToThread(&workerThread);
+
+    connect(&workerThread, &QThread::started, this, [this, isDisabled]() {
+        wrappedInstance = new BluetoothLinkProvider(isDisabled);
+
+        connect(wrappedInstance, &LinkProvider::onConnectionReceived, this, &AsyncLinkProvider::onNewDeviceLink);
+
+        connect(this, &AsyncLinkProvider::enableRequestEvent, wrappedInstance, &BluetoothLinkProvider::enable);
+        connect(this, &AsyncLinkProvider::disableRequestEvent, wrappedInstance, &BluetoothLinkProvider::disable);
+        connect(this, &AsyncLinkProvider::startRequestEvent, wrappedInstance, &BluetoothLinkProvider::onStart);
+        connect(this, &AsyncLinkProvider::stopRequestEvent, wrappedInstance, &BluetoothLinkProvider::onStop);
+        connect(this, &AsyncLinkProvider::networkChangeEvent, wrappedInstance, &BluetoothLinkProvider::onNetworkChange);
+
+        connectTimer = new QTimer();
+        connectTimer->setInterval(30000);
+        connect(connectTimer, &QTimer::timeout, wrappedInstance, &BluetoothLinkProvider::onStartDiscovery);
+
+        connect(this, &AsyncLinkProvider::enableRequestEvent, connectTimer, qOverload<>(&QTimer::start));
+        connect(this, &AsyncLinkProvider::startRequestEvent, connectTimer, qOverload<>(&QTimer::start));
+        connect(this, &AsyncLinkProvider::disableRequestEvent, connectTimer, &QTimer::stop);
+        connect(this, &AsyncLinkProvider::stopRequestEvent, connectTimer, &QTimer::stop);
+    });
+
+    workerThread.start();
 }
 
 QString AsyncLinkProvider::name()
@@ -46,37 +64,27 @@ int AsyncLinkProvider::priority()
 
 void AsyncLinkProvider::enable()
 {
-    eventsMutex.lock();
-    events.enqueue(ENABLE);
-    eventsMutex.unlock();
+    Q_EMIT enableRequestEvent();
 }
 
 void AsyncLinkProvider::disable()
 {
-    eventsMutex.lock();
-    events.enqueue(DISABLE);
-    eventsMutex.unlock();
+    Q_EMIT disableRequestEvent();
 }
 
 void AsyncLinkProvider::onStart()
 {
-    eventsMutex.lock();
-    events.enqueue(START);
-    eventsMutex.unlock();
+    Q_EMIT startRequestEvent();
 }
 
 void AsyncLinkProvider::onStop()
 {
-    eventsMutex.lock();
-    events.enqueue(STOP);
-    eventsMutex.unlock();
+    Q_EMIT stopRequestEvent();
 }
 
 void AsyncLinkProvider::onNetworkChange()
 {
-    eventsMutex.lock();
-    events.enqueue(NETWORKCHANGE);
-    eventsMutex.unlock();
+    Q_EMIT networkChangeEvent();
 }
 
 void AsyncLinkProvider::onLinkDestroyed(const QString &a, DeviceLink *b)
@@ -89,58 +97,4 @@ void AsyncLinkProvider::onLinkDestroyed(const QString &a, DeviceLink *b)
 void AsyncLinkProvider::onNewDeviceLink(DeviceLink *link)
 {
     Q_EMIT LinkProvider::onConnectionReceived(link);
-}
-
-void AsyncLinkProvider::runWorker()
-{
-    connectTimer->setInterval(30000);
-    connectTimer->setSingleShot(false);
-
-    connect(connectTimer, &QTimer::timeout, this, [this]() {
-        if (wrappedInstance != nullptr) {
-            wrappedInstance->onStartDiscovery();
-        }
-    });
-
-    auto messagePumpTimer = new QTimer();
-    messagePumpTimer->setInterval(16);
-    messagePumpTimer->setSingleShot(false);
-
-    connect(messagePumpTimer, &QTimer::timeout, this, [this]() {
-        eventsMutex.lock();
-        if (events.isEmpty()) {
-            eventsMutex.unlock();
-            return;
-        }
-
-        auto event = events.dequeue();
-        eventsMutex.unlock();
-
-        switch (event) {
-        case CONSTRUCTOR:
-            wrappedInstance = new BluetoothLinkProvider(startDisabled);
-
-            connect(wrappedInstance, &LinkProvider::onConnectionReceived, this, &AsyncLinkProvider::onNewDeviceLink);
-            return;
-        case ENABLE:
-            wrappedInstance->enable();
-            break;
-        case DISABLE:
-            wrappedInstance->disable();
-            break;
-        case START:
-            wrappedInstance->onStart();
-            connectTimer->start();
-            break;
-        case STOP:
-            wrappedInstance->onStop();
-            connectTimer->stop();
-            break;
-        case NETWORKCHANGE:
-            wrappedInstance->onNetworkChange();
-            break;
-        }
-    });
-
-    messagePumpTimer->start();
 }

@@ -14,6 +14,7 @@
 #include <QQueue>
 #include <QThread>
 #include <QTimer>
+#include <qtmetamacros.h>
 
 enum AsyncLinkproviderEvents {
     CONSTRUCTOR,
@@ -43,7 +44,12 @@ public:
     void onStop() override;
     void onNetworkChange() override;
     void onLinkDestroyed(const QString &a, DeviceLink *b) override;
-    void runWorker();
+Q_SIGNALS:
+    void enableRequestEvent();
+    void disableRequestEvent();
+    void startRequestEvent();
+    void stopRequestEvent();
+    void networkChangeEvent();
 
 private:
     BluetoothLinkProvider *wrappedInstance;
