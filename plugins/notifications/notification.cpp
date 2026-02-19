@@ -13,6 +13,8 @@
 #include <QFile>
 #include <QIcon>
 #include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
 #include <QPixmap>
 #include <QString>
 #include <QUrl>
@@ -77,6 +79,11 @@ void Notification::createKNotification(const NetworkPacket &np)
                                 true); // This means the notification won't be deleted automatically, but only with KNotifications 5.81
     }
 
+    if (isConversation()) {
+        m_title = isGroupConversation() ? m_groupName : Message::fromObject(m_conversation.at(0).toObject()).sender;
+        m_text = getConversationMessages();
+    }
+
     QString escapedTitle = m_title.toHtmlEscaped();
     // notification title text does not have markup, but in some cases below it is used in body text so we escape it
     QString escapedText = m_text.toHtmlEscaped();
@@ -84,7 +91,7 @@ void Notification::createKNotification(const NetworkPacket &np)
 
     if (NotificationServerInfo::instance().supportedHints().testFlag(NotificationServerInfo::X_KDE_DISPLAY_APPNAME)) {
         m_notification->setTitle(m_title);
-        m_notification->setText(escapedText);
+        m_notification->setText(isConversation() ? m_text : escapedText);
         m_notification->setHint(QStringLiteral("x-kde-display-appname"), m_appName.toHtmlEscaped());
     } else {
         m_notification->setTitle(m_appName);
@@ -166,6 +173,27 @@ void Notification::applyIcon()
     m_notification->setPixmap(icon);
 }
 
+QString Notification::getConversationMessages()
+{
+    QString conversation;
+    // To avoid showing the sender of the first message twice (in title and text) at the start of the conversation.
+    QString prevSender = m_title;
+
+    for (const QJsonValue &messageElement : m_conversation) {
+        const Message message = Message::fromObject(messageElement.toObject());
+        if (message.sender != prevSender) {
+            conversation.append(QStringLiteral("<b>"));
+            conversation.append(message.sender.toHtmlEscaped());
+            conversation.append(QStringLiteral("</b><br/>"));
+
+            prevSender = message.sender;
+        }
+        conversation.append(message.content.toHtmlEscaped());
+        conversation.append(QStringLiteral("<br/>"));
+    }
+    return conversation.chopped(5); // NOTE: We return it chopped to remove the trailing new line.
+}
+
 void Notification::reply()
 {
     Q_EMIT replyRequested();
@@ -183,10 +211,12 @@ void Notification::parseNetworkPacket(const NetworkPacket &np)
     m_ticker = np.get<QString>(QStringLiteral("ticker"));
     m_title = np.get<QString>(QStringLiteral("title"));
     m_text = np.get<QString>(QStringLiteral("text"));
+    m_groupName = np.get<QString>(QStringLiteral("groupName"), QString());
     m_dismissable = np.get<bool>(QStringLiteral("isClearable"));
     m_silent = np.get<bool>(QStringLiteral("silent"));
     m_payloadHash = np.get<QString>(QStringLiteral("payloadHash"));
     m_requestReplyId = np.get<QString>(QStringLiteral("requestReplyId"), QString());
+    m_conversation = np.get<QJsonArray>(QStringLiteral("conversation"), QJsonArray());
 
     m_hasIcon = !m_payloadHash.isEmpty();
     m_actions.clear();

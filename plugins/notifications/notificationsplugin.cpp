@@ -6,6 +6,8 @@
 
 #include "notificationsplugin.h"
 
+#include "networkpacket.h"
+#include "notification.h"
 #include "plugin_notifications_debug.h"
 #include "sendreplydialog.h"
 #include <dbushelper.h>
