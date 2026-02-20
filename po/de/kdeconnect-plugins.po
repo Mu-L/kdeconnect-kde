@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kdeconnect-plugins\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2026-01-23 00:43+0000\n"
+"POT-Creation-Date: 2026-02-20 00:44+0000\n"
 "PO-Revision-Date: 2026-01-31 15:36+0100\n"
 "Last-Translator: Philipp Kiemle <l10n.daphipz@fastmail.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
@@ -120,13 +120,13 @@ msgstr "Aktuelles Wiedergabegerät"
 msgid "N/A"
 msgstr "N/V"
 
-#: notifications/notification.cpp:108
+#: notifications/notification.cpp:115
 #, kde-format
 msgctxt "@action:button"
 msgid "Reply"
 msgstr "Antworten"
 
-#: notifications/notification.cpp:109
+#: notifications/notification.cpp:116
 #, kde-format
 msgctxt "@info:placeholder"
 msgid "Reply to %1…"
