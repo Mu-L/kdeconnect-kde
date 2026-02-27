@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kdeconnect-plugins\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2026-02-20 00:44+0000\n"
+"POT-Creation-Date: 2026-02-27 00:43+0000\n"
 "PO-Revision-Date: 2026-01-31 15:36+0100\n"
 "Last-Translator: Philipp Kiemle <l10n.daphipz@fastmail.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
@@ -172,6 +172,22 @@ msgstr "Nach Beendigung des Anrufs automatisch fortsetzen"
 #, kde-format
 msgid "Ping!"
 msgstr "Ping!"
+
+#: presenter/kdeconnect_presenter_config.qml:23
+#, kde-format
+msgctxt "@action:label"
+msgid "Display:"
+msgstr ""
+
+#: presenter/kdeconnect_presenter_config.qml:25
+#, kde-format
+msgid "Red Dot"
+msgstr ""
+
+#: presenter/kdeconnect_presenter_config.qml:26
+#, kde-format
+msgid "Electric"
+msgstr ""
 
 #: runcommand/kdeconnect_runcommand_config.qml:21
 #, kde-format

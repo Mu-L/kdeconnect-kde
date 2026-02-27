@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kdeconnect-kde\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2026-02-20 00:44+0000\n"
+"POT-Creation-Date: 2026-02-27 00:43+0000\n"
 "PO-Revision-Date: 2026-02-01 18:48+0530\n"
 "Last-Translator: Kishore G <kishore96@gmail.com>\n"
 "Language-Team: Tamil <kde-l10n-ta@kde.org>\n"
@@ -168,6 +168,22 @@ msgstr "அழைப்பு முடிந்தபின் தானாக 
 #, kde-format
 msgid "Ping!"
 msgstr "பிங்!"
+
+#: presenter/kdeconnect_presenter_config.qml:23
+#, kde-format
+msgctxt "@action:label"
+msgid "Display:"
+msgstr ""
+
+#: presenter/kdeconnect_presenter_config.qml:25
+#, kde-format
+msgid "Red Dot"
+msgstr ""
+
+#: presenter/kdeconnect_presenter_config.qml:26
+#, kde-format
+msgid "Electric"
+msgstr ""
 
 #: runcommand/kdeconnect_runcommand_config.qml:21
 #, kde-format

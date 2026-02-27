@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kdeconnect-kde\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2026-02-20 00:44+0000\n"
+"POT-Creation-Date: 2026-02-27 00:43+0000\n"
 "PO-Revision-Date: 2025-12-16 20:40+0100\n"
 "Last-Translator: Iñigo Salvador Azurmendi <xalba@ni.eus>\n"
 "Language-Team: Basque <kde-i18n-eu@kde.org>\n"
@@ -173,6 +173,22 @@ msgstr "Berrekin automatikoki deia bukatzen denean"
 #, kde-format
 msgid "Ping!"
 msgstr "Ping!"
+
+#: presenter/kdeconnect_presenter_config.qml:23
+#, kde-format
+msgctxt "@action:label"
+msgid "Display:"
+msgstr ""
+
+#: presenter/kdeconnect_presenter_config.qml:25
+#, kde-format
+msgid "Red Dot"
+msgstr ""
+
+#: presenter/kdeconnect_presenter_config.qml:26
+#, kde-format
+msgid "Electric"
+msgstr ""
 
 #: runcommand/kdeconnect_runcommand_config.qml:21
 #, kde-format
