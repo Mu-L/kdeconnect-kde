@@ -22,11 +22,11 @@ ConversationModel::ConversationModel(QObject *parent)
     , m_conversationsInterface(nullptr)
 {
     auto roles = roleNames();
-    roles.insert(FromMeRole, "fromMe");
-    roles.insert(DateRole, "date");
-    roles.insert(SenderRole, "sender");
-    roles.insert(AvatarRole, "avatar");
-    roles.insert(AttachmentsRole, "attachments");
+    roles.insert(Roles::FromMeRole, "fromMe");
+    roles.insert(Roles::DateRole, "date");
+    roles.insert(Roles::SenderRole, "sender");
+    roles.insert(Roles::AvatarRole, "avatar");
+    roles.insert(Roles::AttachmentsRole, "attachments");
     setItemRoleNames(roles);
 }
 
@@ -47,8 +47,9 @@ void ConversationModel::setThreadId(const qint64 &threadId)
     m_threadId = threadId;
     clear();
     knownMessageIDs.clear();
+    this->lastRequestedMessageIndex = std::nullopt;
     if (m_threadId != INVALID_THREAD_ID && !m_deviceId.isEmpty()) {
-        requestMoreMessages();
+        requestMessages(RequestMessageRole::FetchMore);
         m_thumbnailsProvider->clear();
     }
 }
@@ -62,7 +63,6 @@ void ConversationModel::setDeviceId(const QString &deviceId)
                                                << "of" << this;
     if (m_conversationsInterface) {
         disconnect(m_conversationsInterface, &DeviceConversationsDbusInterface::conversationUpdated, this, &ConversationModel::handleConversationUpdate);
-        disconnect(m_conversationsInterface, &DeviceConversationsDbusInterface::conversationLoaded, this, &ConversationModel::handleConversationLoaded);
         disconnect(m_conversationsInterface, &DeviceConversationsDbusInterface::conversationCreated, this, &ConversationModel::handleConversationCreated);
         delete m_conversationsInterface;
     }
@@ -71,7 +71,6 @@ void ConversationModel::setDeviceId(const QString &deviceId)
 
     m_conversationsInterface = new DeviceConversationsDbusInterface(deviceId, this);
     connect(m_conversationsInterface, &DeviceConversationsDbusInterface::conversationUpdated, this, &ConversationModel::handleConversationUpdate);
-    connect(m_conversationsInterface, &DeviceConversationsDbusInterface::conversationLoaded, this, &ConversationModel::handleConversationLoaded);
     connect(m_conversationsInterface, &DeviceConversationsDbusInterface::conversationCreated, this, &ConversationModel::handleConversationCreated);
 
     connect(m_conversationsInterface, &DeviceConversationsDbusInterface::attachmentReceived, this, &ConversationModel::filePathReceived);
@@ -118,16 +117,49 @@ bool ConversationModel::startNewConversation(const QString &textMessage, const Q
     return true;
 }
 
-void ConversationModel::requestMoreMessages(const quint32 &howMany)
+void ConversationModel::requestMessages(enum RequestMessageRole role)
 {
+    constexpr qint64 requestBatchSize = 25;
+    constexpr qint64 maxRequestBatchSize = requestBatchSize * 10;
+
     if (m_threadId == INVALID_THREAD_ID) {
         return;
     }
+
+    qCDebug(KDECONNECT_SMS_CONVERSATION_MODEL) << "RequestMessageRole: " << role;
+
     const auto &numMessages = knownMessageIDs.size();
-    m_conversationsInterface->requestConversation(m_threadId, numMessages, numMessages + howMany);
+    bool fetchedEverything = !lastRequestedMessageIndex || numMessages > lastRequestedMessageIndex.value();
+
+    if (fetchedEverything) {
+        if (role == RequestMessageRole::UiTimer) {
+            qCDebug(KDECONNECT_SMS_CONVERSATION_MODEL) << "Nothing to be done for the " << role << " role";
+            return;
+        }
+        this->lastRequestedMessageIndex = lastRequestedMessageIndex.value_or(-1) + requestBatchSize;
+    } else {
+        if (role == RequestMessageRole::UiPrefetch) {
+            qCDebug(KDECONNECT_SMS_CONVERSATION_MODEL) << "Waiting for messages, ignoring " << role << " prefetch";
+            return;
+        } else if (role == RequestMessageRole::FetchMore) {
+            qCDebug(KDECONNECT_SMS_CONVERSATION_MODEL) << "Waiting for messages but adding +1 anyway";
+            this->lastRequestedMessageIndex = lastRequestedMessageIndex.value_or(-1) + 1;
+        }
+    }
+
+    if (this->lastRequestedMessageIndex.value() - numMessages > maxRequestBatchSize) {
+        // Maybe the UI is fetching too many entries at once, or maybe the model is not responding,
+        // because there are no more messages, or for some other reason.
+        // This check is mainly to avoid any potential overflows
+        this->lastRequestedMessageIndex = maxRequestBatchSize;
+        qCDebug(KDECONNECT_SMS_CONVERSATION_MODEL) << "Reached a maximum number of pending messages";
+    }
+
+    qCDebug(KDECONNECT_SMS_CONVERSATION_MODEL) << "Fetching from:" << numMessages << " to: " << this->lastRequestedMessageIndex.value() + 1;
+    m_conversationsInterface->requestConversation(m_threadId, numMessages, this->lastRequestedMessageIndex.value() + 1);
 }
 
-void ConversationModel::createRowFromMessage(const ConversationMessage &message, int pos)
+void ConversationModel::createRowFromMessage(const ConversationMessage &message)
 {
     if (message.threadID() != m_threadId) {
         // Because of the asynchronous nature of the current implementation of this model, if the
@@ -155,9 +187,9 @@ void ConversationModel::createRowFromMessage(const ConversationMessage &message,
 
     auto item = new QStandardItem;
     item->setText(displayBody);
-    item->setData(message.isOutgoing(), FromMeRole);
-    item->setData(message.date(), DateRole);
-    item->setData(senderName, SenderRole);
+    item->setData(message.isOutgoing(), Roles::FromMeRole);
+    item->setData(message.date(), Roles::DateRole);
+    item->setData(senderName, Roles::SenderRole);
 
     QList<QVariant> attachmentInfoList;
     const QList<Attachment> attachmentList = message.attachments();
@@ -176,10 +208,25 @@ void ConversationModel::createRowFromMessage(const ConversationMessage &message,
         }
     }
 
-    item->setData(attachmentInfoList, AttachmentsRole);
+    item->setData(attachmentInfoList, Roles::AttachmentsRole);
 
-    insertRow(pos, item);
     knownMessageIDs.insert(message.uID());
+
+    // With the current design of the system, this should never happen, but if somehow it does,
+    // the event won't cause any issues
+    if (!lastRequestedMessageIndex || knownMessageIDs.size() > lastRequestedMessageIndex.value() + 1) {
+        qCDebug(KDECONNECT_SMS_CONVERSATION_MODEL) << "More messages arrived then requested";
+        lastRequestedMessageIndex = knownMessageIDs.size() - 1;
+    }
+
+    // It is important to sort the items manually, so we know when a new message has arrived,
+    // and the UI can react accordingly
+    if (rowCount() > 0 && this->item(0)->data(Roles::DateRole).toLongLong() < message.date()) {
+        Q_EMIT gotNewMessage();
+        insertRow(0, item);
+    } else {
+        appendRow(item);
+    }
 }
 
 void ConversationModel::handleConversationUpdate(const QDBusVariant &msg)
@@ -191,7 +238,7 @@ void ConversationModel::handleConversationUpdate(const QDBusVariant &msg)
         qCDebug(KDECONNECT_SMS_CONVERSATION_MODEL) << "Saw update for thread" << message.threadID() << "but we are currently viewing" << m_threadId;
         return;
     }
-    createRowFromMessage(message, 0);
+    createRowFromMessage(message);
 }
 
 void ConversationModel::handleConversationCreated(const QDBusVariant &msg)
@@ -201,18 +248,8 @@ void ConversationModel::handleConversationCreated(const QDBusVariant &msg)
     if (m_threadId == INVALID_THREAD_ID && SmsHelper::isPhoneNumberMatch(m_addressList[0].address(), message.addresses().first().address())
         && !message.isMultitarget()) {
         m_threadId = message.threadID();
-        createRowFromMessage(message, 0);
+        createRowFromMessage(message);
     }
-}
-
-void ConversationModel::handleConversationLoaded(qint64 threadID)
-{
-    if (threadID != m_threadId) {
-        return;
-    }
-    // If we get this flag, it means that the phone will not be responding with any more messages
-    // so we should not be showing a loading indicator
-    Q_EMIT loadingFinished();
 }
 
 QString ConversationModel::getCharCountInfo(const QString &message) const
@@ -248,7 +285,7 @@ bool ConversationModel::canFetchMore(const QModelIndex & /* parent */) const
 
 void ConversationModel::fetchMore(const QModelIndex & /* parent */)
 {
-    requestMoreMessages();
+    requestMessages(RequestMessageRole::FetchMore);
 }
 
 #include "moc_conversationmodel.cpp"
