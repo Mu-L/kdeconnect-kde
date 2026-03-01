@@ -326,13 +326,13 @@ msgstr "启用全屏"
 #, kde-format
 msgctxt "@action:button accessible"
 msgid "Previous Slide"
-msgstr ""
+msgstr "上一张幻灯片"
 
 #: qml/presentationRemote.qml:47
 #, kde-format
 msgctxt "@action:button accessible"
 msgid "Next Slide"
-msgstr ""
+msgstr "下一张幻灯片"
 
 #: qml/runcommand.qml:23
 #, kde-format
