@@ -5,6 +5,7 @@
  */
 
 #include <QAbstractButton>
+#include <QAbstractListModel>
 #include <QApplication>
 #include <QComboBox>
 #include <QCommandLineParser>
@@ -12,10 +13,12 @@
 #include <QDialog>
 #include <QFileDialog>
 #include <QIcon>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QQuickStyle>
 #include <QTextStream>
 #include <QUrl>
+#include <QtContainerFwd>
 
 #include <KAboutData>
 #include <KColorSchemeManager>
@@ -27,11 +30,16 @@
 #include <dbushelper.h>
 
 #include "dbusinterfaces/dbushelpers.h"
-#include "dbusinterfaces/dbusinterfaces.h"
 #include "kdeconnect-version.h"
 #include "models/devicesmodel.h"
 #include "models/devicespluginfilterproxymodel.h"
 #include "ui_dialog.h"
+
+enum class HandlerMode {
+    UserInput,
+    SingleArg,
+    MultiArg,
+};
 
 /**
  * Show only devices that can be shared to
@@ -76,7 +84,9 @@ int main(int argc, char **argv)
 
     KDBusService dbusService(KDBusService::Unique);
 
-    QUrl urlToShare;
+    enum HandlerMode mode = HandlerMode::UserInput;
+    QList<QUrl> toSend;
+
     bool open;
     QString deviceId;
     {
@@ -87,11 +97,17 @@ int main(int argc, char **argv)
         aboutData.setupCommandLine(&parser);
         parser.process(app);
         aboutData.processCommandLine(&parser);
-        if (parser.positionalArguments().count() == 1) {
-            urlToShare = QUrl::fromUserInput(parser.positionalArguments().constFirst(), QDir::currentPath(), QUrl::AssumeLocalFile);
-        }
         open = parser.isSet(QStringLiteral("open"));
         deviceId = parser.value(QStringLiteral("device"));
+
+        for (auto arg : parser.positionalArguments()) {
+            toSend += QUrl::fromUserInput(arg, QDir::currentPath(), QUrl::AssumeLocalFile);
+        }
+        if (parser.positionalArguments().count() > 1) {
+            mode = HandlerMode::MultiArg;
+        } else if (parser.positionalArguments().count() == 1) {
+            mode = HandlerMode::SingleArg;
+        }
     }
 
     DevicesModel model;
@@ -121,15 +137,17 @@ int main(int argc, char **argv)
         });
     }
 
-    KUrlRequester *urlRequester = new KUrlRequester(&dialog);
-    urlRequester->setStartDir(QUrl::fromLocalFile(QDir::homePath()));
-    urlRequester->setFocus();
-    uidialog.urlPickerLayout->addWidget(urlRequester);
-    urlRequester->setPlaceholderText(i18nc("Placeholder for input field that should contain a file/URL to share", "Local file or web URL"));
-    if (!urlToShare.isEmpty()) {
+    KUrlRequester *urlRequester;
+
+    if (mode == HandlerMode::UserInput) {
+        urlRequester = new KUrlRequester(&dialog);
+        urlRequester->setStartDir(QUrl::fromLocalFile(QDir::homePath()));
+        urlRequester->setFocus();
+        uidialog.urlPickerLayout->addWidget(urlRequester);
+        urlRequester->setPlaceholderText(i18nc("Placeholder for input field that should contain a file/URL to share", "Local file or web URL"));
+    } else if (mode == HandlerMode::SingleArg) {
         uidialog.urlPickerLabel->setVisible(false);
-        urlRequester->setVisible(false);
-        urlRequester->setUrl(urlToShare);
+        const QUrl &urlToShare = toSend.constFirst();
 
         QString displayUrl;
         if (urlToShare.scheme() == QLatin1String("tel")) {
@@ -145,10 +163,24 @@ int main(int argc, char **argv)
             displayUrl = urlToShare.toDisplayString(QUrl::PreferLocalFile);
             uidialog.devicePickerLabel->setText(i18n("Device to send %1 to:", displayUrl));
         }
+    } else if (mode == HandlerMode::MultiArg) {
+        QListWidget *listView = new QListWidget;
+
+        listView->addItems(QUrl::toStringList(toSend, QUrl::PreferLocalFile));
+        uidialog.urlPickerLayout->addWidget(listView);
+        uidialog.urlPickerLabel->setText(i18nc("Label, for a list of items like files or urls", "Shared content:"));
     }
 
-    if (dialog.exec() == QDialog::Accepted) {
-        const QUrl url = urlRequester->url();
+    if (dialog.exec() != QDialog::Accepted || toSend.length() == 0) {
+        return 1;
+    }
+
+    if (mode == HandlerMode::UserInput) {
+        toSend.append(urlRequester->url());
+    }
+
+    QString failed;
+    for (const auto &url : toSend) {
         const int currentDeviceIndex = uidialog.devicePicker->currentIndex();
         if (!url.isEmpty() && currentDeviceIndex >= 0) {
             const QString device = proxyModel.index(currentDeviceIndex, 0).data(DevicesModel::IdModelRole).toString();
@@ -160,12 +192,9 @@ int main(int argc, char **argv)
                                                               action);
             msg.setArguments({url.toString()});
             blockOnReply(QDBusConnection::sessionBus().asyncCall(msg));
-            return 0;
         } else {
             QMessageBox::critical(nullptr, description, i18n("Couldn't share %1", url.toString()));
             return 1;
         }
-    } else {
-        return 1;
     }
 }
