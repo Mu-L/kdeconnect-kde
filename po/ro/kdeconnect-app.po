@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: kdeconnect-kde\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
 "POT-Creation-Date: 2026-02-27 00:43+0000\n"
-"PO-Revision-Date: 2026-02-09 13:21+0000\n"
+"PO-Revision-Date: 2026-02-28 22:28+0000\n"
 "Last-Translator: Sergiu Bivol <sergiu@cip.md>\n"
 "Language-Team: Romanian <kde-i18n-ro@kde.org>\n"
 "Language: ro\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Lokalize 25.08.1\n"
+"X-Generator: Lokalize 25.12.2\n"
 
 #: main.cpp:38 main.cpp:40
 #, kde-format
@@ -328,13 +328,13 @@ msgstr "Activează ecranul complet"
 #, kde-format
 msgctxt "@action:button accessible"
 msgid "Previous Slide"
-msgstr ""
+msgstr "Diapozitivul precedent"
 
 #: qml/presentationRemote.qml:47
 #, kde-format
 msgctxt "@action:button accessible"
 msgid "Next Slide"
-msgstr ""
+msgstr "Diapozitivul următor"
 
 #: qml/runcommand.qml:23
 #, kde-format

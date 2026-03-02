@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
 "POT-Creation-Date: 2026-02-27 00:43+0000\n"
-"PO-Revision-Date: 2026-01-24 10:26+0100\n"
+"PO-Revision-Date: 2026-02-28 09:38+0100\n"
 "Last-Translator: Xavier Besnard <xavier.besnard@kde.org>\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Accelerator-Marker: &\n"
 "X-Environment: kde\n"
-"X-Generator: Lokalize 25.12.1\n"
+"X-Generator: Lokalize 25.12.2\n"
 "X-Text-Markup: kde4\n"
 
 #: battery/batteryplugin.cpp:119
@@ -183,17 +183,17 @@ msgstr "Ping !"
 #, kde-format
 msgctxt "@action:label"
 msgid "Display:"
-msgstr ""
+msgstr "Affichage :"
 
 #: presenter/kdeconnect_presenter_config.qml:25
 #, kde-format
 msgid "Red Dot"
-msgstr ""
+msgstr "Point rouge"
 
 #: presenter/kdeconnect_presenter_config.qml:26
 #, kde-format
 msgid "Electric"
-msgstr ""
+msgstr "Électrique"
 
 #: runcommand/kdeconnect_runcommand_config.qml:21
 #, kde-format

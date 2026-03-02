@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kdeconnect-kde\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2025-11-17 11:51+0000\n"
+"POT-Creation-Date: 2026-03-02 00:44+0000\n"
 "PO-Revision-Date: 2025-12-08 08:15+0100\n"
 "Last-Translator: Iñigo Salvador Azurmendi <xalba@ni.eus>\n"
 "Language-Team: Basque <kde-i18n-eu@kde.org>\n"
@@ -44,73 +44,79 @@ msgstr "Hautatu gailua:"
 msgid "Enter a file location or URL:"
 msgstr "Sartu fitxategi baten kokalekua edo URL bat:"
 
-#: kdeconnect-handler.cpp:44
+#: kdeconnect-handler.cpp:52
 #, kde-format
 msgid "KDE Connect URL handler"
 msgstr "KDE Connect-en URL-kudeatzailea"
 
-#: kdeconnect-handler.cpp:50
+#: kdeconnect-handler.cpp:58
 #, kde-format
 msgid "© 2015–2025 KDE Connect Team"
 msgstr "© 2015-2025 KDE Connect taldea"
 
-#: kdeconnect-handler.cpp:51
+#: kdeconnect-handler.cpp:59
 #, kde-format
 msgid "Aleix Pol Gonzalez"
 msgstr "Aleix Pol Gonzalez"
 
-#: kdeconnect-handler.cpp:52
+#: kdeconnect-handler.cpp:60
 #, kde-format
 msgid "Albert Vaca Cintora"
 msgstr "Albert Vaca Cintora"
 
-#: kdeconnect-handler.cpp:84
+#: kdeconnect-handler.cpp:94
 #, kde-format
 msgid "URL to share"
 msgstr "Partekatzeko URLa"
 
-#: kdeconnect-handler.cpp:85
+#: kdeconnect-handler.cpp:95
 #, kde-format
 msgid "Select a device"
 msgstr "Hautatu gailu bat"
 
-#: kdeconnect-handler.cpp:85
+#: kdeconnect-handler.cpp:95
 #, kde-format
 msgid "id"
 msgstr "IDa"
 
-#: kdeconnect-handler.cpp:86
+#: kdeconnect-handler.cpp:96
 #, kde-format
 msgid "Automatically open the file on the remote device, when supported"
 msgstr "Ireki fitxategi automatikoki urruneko gailuan, onartzen denean"
 
-#: kdeconnect-handler.cpp:128
+#: kdeconnect-handler.cpp:147
 #, kde-format
 msgctxt "Placeholder for input field that should contain a file/URL to share"
 msgid "Local file or web URL"
 msgstr "Fitxategi lokala edo web URLa"
 
-#: kdeconnect-handler.cpp:137
+#: kdeconnect-handler.cpp:155
 #, kde-format
 msgid "Device to call %1 with:"
 msgstr "%1(r)i deitzeko gailua:"
 
-#: kdeconnect-handler.cpp:140
+#: kdeconnect-handler.cpp:158
 #, kde-format
 msgid "Device to open %1 on:"
 msgstr "%1 irekitzeko gailua:"
 
-#: kdeconnect-handler.cpp:143
+#: kdeconnect-handler.cpp:161
 #, kde-format
 msgid "Device to send a SMS with:"
 msgstr "SMS bat bidaltzeko gailua:"
 
-#: kdeconnect-handler.cpp:146
+#: kdeconnect-handler.cpp:164
 #, kde-format
 msgid "Device to send %1 to:"
 msgstr "%1 bidaltzeko gailua:"
 
-#: kdeconnect-handler.cpp:165
+#: kdeconnect-handler.cpp:171
+#, kde-format
+msgctxt "Label, for a list of items like files or urls"
+msgid "Shared content:"
+msgstr ""
+
+#: kdeconnect-handler.cpp:196
 #, kde-format
 msgid "Couldn't share %1"
 msgstr "Ezin izan da %1 partekatu"

@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: kdeconnect-kde\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
 "POT-Creation-Date: 2026-02-27 00:43+0000\n"
-"PO-Revision-Date: 2026-02-12 15:58+0900\n"
+"PO-Revision-Date: 2026-03-02 05:33+0900\n"
 "Last-Translator: Kisaragi Hiu <mail@kisaragi-hiu.com>\n"
 "Language-Team: Traditional Chinese <zh-l10n@lists.slat.org>\n"
 "Language: zh_TW\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Lokalize 26.03.70\n"
+"X-Generator: Lokalize 25.11.70\n"
 
 #: main.cpp:38 main.cpp:40
 #, kde-format
@@ -330,13 +330,13 @@ msgstr "啟用全螢幕"
 #, kde-format
 msgctxt "@action:button accessible"
 msgid "Previous Slide"
-msgstr ""
+msgstr "上一張投影片"
 
 #: qml/presentationRemote.qml:47
 #, kde-format
 msgctxt "@action:button accessible"
 msgid "Next Slide"
-msgstr ""
+msgstr "下一張投影片"
 
 #: qml/runcommand.qml:23
 #, kde-format
