@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: kdeconnect\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
 "POT-Creation-Date: 2026-03-12 00:43+0000\n"
-"PO-Revision-Date: 2024-07-28 23:34+0300\n"
+"PO-Revision-Date: 2026-03-15 22:26+0200\n"
 "Last-Translator: Moo <<>>\n"
 "Language-Team: Lithuanian <kde-i18n-lt@kde.org>\n"
 "Language: lt\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : n%10>=2 && (n%100<10 || n"
 "%100>=20) ? 1 : n%10==0 || (n%100>10 && n%100<20) ? 2 : 3);\n"
-"X-Generator: Poedit 3.4.2\n"
+"X-Generator: Poedit 3.8\n"
 
 #: package/contents/ui/Battery.qml:33
 #, kde-format
@@ -103,13 +103,12 @@ msgstr "%1%"
 #: package/contents/ui/DeviceDelegate.qml:310
 #, kde-format
 msgid "More options…"
-msgstr ""
+msgstr "Daugiau parinkčių…"
 
 #: package/contents/ui/DeviceDelegate.qml:350
-#, fuzzy, kde-format
-#| msgid "Notifications:"
+#, kde-format
 msgid "Notifications"
-msgstr "Pranešimai:"
+msgstr "Pranešimai"
 
 #: package/contents/ui/DeviceDelegate.qml:362
 #, kde-format
