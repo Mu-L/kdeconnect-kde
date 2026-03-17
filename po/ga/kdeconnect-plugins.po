@@ -126,12 +126,10 @@ msgid "Reply"
 msgstr "Freagra"
 
 #: notifications/notification.cpp:118
-#, fuzzy, kde-format
-#| msgctxt "@info:placeholder"
-#| msgid "Reply to %1…"
+#, kde-format
 msgctxt "@info:placeholder %1 is the name of a group chat"
 msgid "Reply in %1…"
-msgstr "Freagra chuig %1…"
+msgstr ""
 
 #: notifications/notification.cpp:120
 #, kde-format
